@@ -1,0 +1,1329 @@
+\documentclass[12pt]{article}
+\usepackage{physics}
+\usepackage{booktabs}
+\usepackage{natbib}   % omit 'round' option if you prefer square brackets
+\bibliographystyle{plainnat}
+\usepackage{xcolor}
+\usepackage[section]{placeins}
+\usepackage{amsmath, amssymb, amsthm}
+\usepackage{graphicx}
+\usepackage{float}
+\usepackage{listings}
+
+% for python code
+\definecolor{codegreen}{rgb}{0,0.6,0}
+\definecolor{codegray}{rgb}{0.5,0.5,0.5}
+\definecolor{codepurple}{rgb}{0.58,0,0.82}
+\definecolor{backcolour}{rgb}{0.95,0.95,0.92}
+
+\lstdefinestyle{mystyle}{
+    backgroundcolor=\color{backcolour},   
+    commentstyle=\color{codegreen},
+    keywordstyle=\color{magenta},
+    numberstyle=\tiny\color{codegray},
+    stringstyle=\color{codepurple},
+    basicstyle=\ttfamily\footnotesize,
+    breakatwhitespace=false,         
+    breaklines=true,                 
+    captionpos=b,                    
+    keepspaces=true,                 
+    numbers=left,                    
+    numbersep=5pt,                  
+    showspaces=false,                
+    showstringspaces=false,
+    showtabs=false,                  
+    tabsize=2
+}
+
+\lstset{style=mystyle}
+
+
+\title{Purity and Entanglement Calculations for 3 point cycle for one walker using Hadamard Coin}
+\author{Ian Craig}
+\date{28th January 2026}
+
+\begin{document}
+
+\maketitle
+
+\begin{abstract}
+    In this document, we calculate the probability distribution for one walker on a discrete quantum walk on a 3 point cycle using a Hadamard coin.  We calculate the purity and entanglement metrics for each of the first eight steps.  Finally, we develop and run a Python program to experimentally verify the calculations.  As we know from \cite{Dukes_2014} no revival occurs after eight steps for this coin. We see the entanglement entropy, $S$ oscillating for the steps treated.  The purity of this system was found to be always 1.  In the conclusion, the results for the theory calculations and the experiment run are summarised.  Table~\ref{tab:walk_results} gives the theory calculations for each step.  Table~\ref{tab:exp_results} gives the experimental output which agrees with the mathematical calculations.  The Python program listing and detailed calculations for steps 4-8 are given the appendix.
+\end{abstract}
+
+% Add this after your author/date information but before the abstract
+% ============ REVISION HISTORY ============
+
+\begin{table}[h]
+\centering
+\caption{Document Revision History}
+\label{tab:revision_history}
+\begin{tabular}{|c|c|c|c|}
+\hline
+\textbf{Revision} & \textbf{Date} & \textbf{Author} & \textbf{Description} \\
+\hline
+00 & 26th January 2026 & Ian Craig & Initial document for review\\
+01 & 28th January 2026 & Ian Craig & Corrected probability distribution and\\ &&&
+reconsiled theory and experimental results \\
+\hline
+%01 & \today & Ian Craig & Initial document for review: \\
+%& & & \begin{tabular}{@{}l@{}}
+%    • Fixed LaTeX table referencing issue\\
+%    • Corrected Step 3 calculation consistency\\
+%    • Added revision history table\\
+%    • Verified mathematical accuracy\\
+%   \end{tabular} \\
+%\hline
+\end{tabular}
+\end{table}
+
+% ============ END REVISION HISTORY ============
+
+\section{Introduction}
+To calculate the purity and entanglement metrics of the system, we calculate and use the density matrix $\rho$
+of the position/coin system.  The density matrix is given by: 
+\[
+\rho = |\psi\rangle\langle\psi|
+\]
+\cite{Carneiro_2005}
+
+
+\section{Recall: A 3-Point Circle Quantum Walk}
+Firstly, we simply calculate the probability distribution of the discrete quantum walk for one walker for the first three steps, checking all probabilities add to 1 for each step.
+
+\subsection{Hilbert Space}
+We have a 2-dimensional coin space (heads(0) and tails(1)) and 3-dimensional position space (0,1,2) . The full Hilbert space is:
+\[
+\mathcal{H} = \mathcal{H}_{\text{coin}} \otimes \mathcal{H}_{\text{position}} \quad \text{dimension: } 2 \times 3 = 6
+\]
+
+Basis states: $|c,x\rangle$ where $c \in \{0,1\}$ (coin) and $x \in \{0,1,2\}$ (position).
+
+Ordering for vector representation:
+\[
+|0,0\rangle, |1,0\rangle, |0,1\rangle, |1,1\rangle, |0,2\rangle, |1,2\rangle
+\]
+
+\subsection{Unitary Evolution Operator}
+
+\subsubsection{Hadamard Coin Operator}
+\[
+H = \frac{1}{\sqrt{2}} \begin{pmatrix} 1 & 1 \\ 1 & -1 \end{pmatrix}
+\]
+For the full system: $C = H \otimes I_3$.
+
+\subsubsection{Shift Operator}
+Movement rules:
+\begin{align*}
+S|0,x\rangle &= |0, x-1 \ (\text{mod } 3)\rangle \quad \text{(move counterclockwise)} \\
+S|1,x\rangle &= |1, x+1 \ (\text{mod } 3)\rangle \quad \text{(move clockwise)}
+\end{align*}
+
+\subsubsection{Full Step Operator}
+\[
+U = S \cdot (C \otimes I_3)
+\]
+
+The explicit $6 \times 6$ matrix, which is the block matrix used by \cite{Dukes_2014}:
+\[
+U = \frac{1}{\sqrt{2}}
+\begin{pmatrix}
+0 & 0 & 1 & 1 & 0 & 0 \\
+0 & 0 & 0 & 0 & 1 & -1 \\
+0 & 0 & 0 & 0 & 1 & 1 \\
+1 & -1 & 0 & 0 & 0 & 0 \\
+1 & 1 & 0 & 0 & 0 & 0 \\
+0 & 0 & 1 & -1 & 0 & 0
+\end{pmatrix}
+\]
+
+\section{Recall: A Three-Step Walk Example}
+Here, for completeness, we calculate the probability distribution for our one walker after 1, 2 and 3 steps.
+
+\subsection{Initial State}
+Start at position 0 with coin state 0:
+\[
+|\psi_0\rangle = |0,0\rangle = \begin{pmatrix} 1 & 0 & 0 & 0 & 0 & 0 \end{pmatrix}^T
+\]
+
+\subsection{Step 1: Calculate $|\psi_1\rangle = U|\psi_0\rangle$}
+\[
+|\psi_1\rangle = U 
+\begin{pmatrix} 1 \\ 0 \\ 0 \\ 0 \\ 0 \\ 0 \end{pmatrix} 
+= \frac{1}{\sqrt{2}} \begin{pmatrix} 0 \\ 0 \\ 0 \\ 1 \\ 1 \\ 0 \end{pmatrix}
+= \frac{1}{\sqrt{2}}|1,1\rangle + \frac{1}{\sqrt{2}}|0,2\rangle
+\]
+
+Probability distribution:
+\begin{align*}
+P_1(0) &= 0 \\
+P_1(1) &= \left|\frac{1}{\sqrt{2}}\right|^2 = \frac{1}{2} \quad \text{(from } |1,1\rangle) \\
+P_1(2) &= \left|\frac{1}{\sqrt{2}}\right|^2 = \frac{1}{2} \quad \text{(from } |0,2\rangle)
+\end{align*}
+
+\subsection{Step 2: Calculate $|\psi_2\rangle = U|\psi_1\rangle$}
+\[
+|\psi_2\rangle = U \cdot \frac{1}{\sqrt{2}} \begin{pmatrix} 0 \\ 0 \\ 0 \\ 1 \\ 1 \\ 0 \end{pmatrix}
+= \begin{pmatrix} \frac{1}{2} \\ \frac{1}{2} \\ \frac{1}{2} \\ 0 \\ 0 \\ -\frac{1}{2} \end{pmatrix}
+= \frac{1}{2}|0,0\rangle + \frac{1}{2}|1,0\rangle + \frac{1}{2}|0,1\rangle - \frac{1}{2}|1,2\rangle
+\]
+
+Probability distribution:
+\begin{align*}
+P_2(0) &= \left|\frac{1}{2}\right|^2 + \left|\frac{1}{2}\right|^2 = \frac{1}{4} + \frac{1}{4} = \frac{1}{2} \\
+P_2(1) &= \left|\frac{1}{2}\right|^2 = \frac{1}{4} \\
+P_2(2) &= \left|-\frac{1}{2}\right|^2 = \frac{1}{4}
+\end{align*}
+
+\subsection{Step 3: Calculate $|\psi_3\rangle = U|\psi_2\rangle$}
+\[
+|\psi_3\rangle = U \begin{pmatrix} \frac{1}{2} \\ \frac{1}{2} \\ \frac{1}{2} \\ 0 \\ 0 \\ -\frac{1}{2} \end{pmatrix}
+= \begin{pmatrix} \frac{1}{2\sqrt{2}} \\ \frac{1}{2\sqrt{2}} \\ -\frac{1}{2\sqrt{2}} \\ 0 \\ \frac{1}{\sqrt{2}} \\ \frac{1}{2\sqrt{2}} \end{pmatrix}
+\]
+
+In Dirac notation:
+\[
+|\psi_3\rangle = \frac{1}{2\sqrt{2}}|0,0\rangle + \frac{1}{2\sqrt{2}}|1,0\rangle - \frac{1}{2\sqrt{2}}|0,1\rangle + \frac{1}{\sqrt{2}}|0,2\rangle + \frac{1}{2\sqrt{2}}|1,2\rangle
+\]
+
+Probability distribution:
+\begin{align*}
+P_3(0) &= \left|\frac{1}{2\sqrt{2}}\right|^2 + \left|\frac{1}{2\sqrt{2}}\right|^2 = \frac{1}{8} + \frac{1}{8} = \frac{1}{4} \\
+P_3(1) &= \left|-\frac{1}{2\sqrt{2}}\right|^2 = \frac{1}{8} \\
+P_3(2) &= \left|\frac{1}{\sqrt{2}}\right|^2 + \left|\frac{1}{2\sqrt{2}}\right|^2 = \frac{1}{2} + \frac{1}{8} = \frac{5}{8}
+\end{align*}
+
+\section{Density Matrix Construction}
+
+\subsection{Definition}
+For our walk $|\psi\rangle$, the density matrix is:
+\[
+\rho = |\psi\rangle\langle\psi|
+\]
+
+If $|\psi\rangle = \sum_i \alpha_i |i\rangle$, then:
+\[
+\rho = \sum_{i,j} \alpha_i \alpha_j^* |i\rangle\langle j|
+\]
+or in matrix form: $\rho_{ij} = \alpha_i \alpha_j^*$.
+
+\subsection{Step-by-Step Density Matrix Construction}
+
+\subsubsection{Step 0: $\rho_0$}
+\[
+|\psi_0\rangle = |0,0\rangle = (1,0,0,0,0,0)^T
+\]
+\[
+\rho_0 = 
+\begin{pmatrix}
+1 & 0 & 0 & 0 & 0 & 0 \\
+0 & 0 & 0 & 0 & 0 & 0 \\
+0 & 0 & 0 & 0 & 0 & 0 \\
+0 & 0 & 0 & 0 & 0 & 0 \\
+0 & 0 & 0 & 0 & 0 & 0 \\
+0 & 0 & 0 & 0 & 0 & 0
+\end{pmatrix}
+\]
+
+\subsubsection{Step 1: $\rho_1$}
+\[
+|\psi_1\rangle = \frac{1}{\sqrt{2}}|1,1\rangle + \frac{1}{\sqrt{2}}|0,2\rangle
+\]
+\[
+= \frac{1}{\sqrt{2}}(0,0,0,1,1,0)^T
+\]
+
+Calculate $\rho_1 = |\psi_1\rangle\langle\psi_1|$:
+
+First, write $\langle\psi_1| = \frac{1}{\sqrt{2}}(0,0,0,1,1,0)$
+
+\[
+\rho_1 = 
+\frac{1}{2}
+\begin{pmatrix}
+0 \\ 0 \\ 0 \\ 1 \\ 1 \\ 0
+\end{pmatrix}
+\begin{pmatrix}
+0 & 0 & 0 & 1 & 1 & 0
+\end{pmatrix}
+= \frac{1}{2}
+\begin{pmatrix}
+0 & 0 & 0 & 0 & 0 & 0 \\
+0 & 0 & 0 & 0 & 0 & 0 \\
+0 & 0 & 0 & 0 & 0 & 0 \\
+0 & 0 & 0 & 1 & 1 & 0 \\
+0 & 0 & 0 & 1 & 1 & 0 \\
+0 & 0 & 0 & 0 & 0 & 0
+\end{pmatrix}
+\]
+
+\subsubsection{Step 2: $\rho_2$}
+\[
+|\psi_2\rangle = \frac{1}{2}|0,0\rangle + \frac{1}{2}|1,0\rangle + \frac{1}{2}|0,1\rangle - \frac{1}{2}|1,2\rangle
+\]
+\[
+= \left(\frac{1}{2}, \frac{1}{2}, \frac{1}{2}, 0, 0, -\frac{1}{2}\right)^T
+\]
+
+\[
+\rho_2 = |\psi_2\rangle\langle\psi_2| = 
+\begin{pmatrix}
+\frac{1}{4} & \frac{1}{4} & \frac{1}{4} & 0 & 0 & -\frac{1}{4} \\
+\frac{1}{4} & \frac{1}{4} & \frac{1}{4} & 0 & 0 & -\frac{1}{4} \\
+\frac{1}{4} & \frac{1}{4} & \frac{1}{4} & 0 & 0 & -\frac{1}{4} \\
+0 & 0 & 0 & 0 & 0 & 0 \\
+0 & 0 & 0 & 0 & 0 & 0 \\
+-\frac{1}{4} & -\frac{1}{4} & -\frac{1}{4} & 0 & 0 & \frac{1}{4}
+\end{pmatrix}
+\]
+
+Extracting the $\frac{1}{4}$ gives
+
+\[
+\rho_2 = \frac{1}{4}
+\begin{pmatrix}
+1 & 1 & 1 & 0 & 0 & -1 \\
+1 & 1 & 1 & 0 & 0 & -1 \\
+1 & 1 & 1 & 0 & 0 & -1 \\
+0 & 0 & 0 & 0 & 0 & 0 \\
+0 & 0 & 0 & 0 & 0 & 0 \\
+-1 & -1 & -1 & 0 & 0 & 1
+\end{pmatrix}
+\]
+
+\subsection{Step 3: Density Matrix and Entanglement Calculation}
+\label{sec:step3_corrected}
+
+\textbf{State vector:}
+\[
+|\psi_3\rangle = \begin{pmatrix} \frac{1}{2\sqrt{2}} \\ \frac{1}{2\sqrt{2}} \\ -\frac{1}{2\sqrt{2}} \\ 0 \\ \frac{1}{\sqrt{2}} \\ \frac{1}{2\sqrt{2}} \end{pmatrix}
+= \begin{pmatrix} a \\ a \\ -a \\ 0 \\ 2a \\ a \end{pmatrix}, \quad \text{where } a = \frac{1}{2\sqrt{2}}.
+\]
+
+\textbf{Density matrix $\rho_3 = |\psi_3\rangle\langle\psi_3|$:}
+\[
+\rho_3 = a^2
+\begin{pmatrix}
+1 & 1 & -1 & 0 & 2 & 1 \\
+1 & 1 & -1 & 0 & 2 & 1 \\
+-1 & -1 & 1 & 0 & -2 & -1 \\
+0 & 0 & 0 & 0 & 0 & 0 \\
+2 & 2 & -2 & 0 & 4 & 2 \\
+1 & 1 & -1 & 0 & 2 & 1
+\end{pmatrix}
+= \frac{1}{8}
+\begin{pmatrix}
+1 & 1 & -1 & 0 & 2 & 1 \\
+1 & 1 & -1 & 0 & 2 & 1 \\
+-1 & -1 & 1 & 0 & -2 & -1 \\
+0 & 0 & 0 & 0 & 0 & 0 \\
+2 & 2 & -2 & 0 & 4 & 2 \\
+1 & 1 & -1 & 0 & 2 & 1
+\end{pmatrix}.
+\]
+
+\textbf{Verification:} $\operatorname{Tr}(\rho_3) = \frac{1}{8}(1+1+1+0+4+1) = 1$ \checkmark.
+
+\subsection{Aside: We calculate the entanglement entropy here also.}
+
+\textbf{Reduced coin density matrix:}
+\[
+\rho_{\text{coin}}^{(3)} =
+\begin{pmatrix}
+\displaystyle\sum_x |\alpha_{0,x}|^2 & \displaystyle\sum_x \alpha_{0,x}\alpha_{1,x}^* \\[10pt]
+\displaystyle\sum_x \alpha_{1,x}\alpha_{0,x}^* & \displaystyle\sum_x |\alpha_{1,x}|^2
+\end{pmatrix}
+=
+\begin{pmatrix}
+\frac{3}{4} & \frac{3}{8} \\[8pt]
+\frac{3}{8} & \frac{1}{4}
+\end{pmatrix}.
+\]
+
+\textbf{Eigenvalues:}
+\[
+\lambda_{1,2} = \frac{4 \pm \sqrt{13}}{8} \approx 0.9507,\ 0.0493.
+\]
+
+\textbf{Von Neumann entanglement entropy:}
+\[
+S_3 = -\lambda_1 \log_2 \lambda_1 - \lambda_2 \log_2 \lambda_2 \approx 0.2847.
+\]
+
+See below for entanglement entropy calculations for each step.
+
+\section{Purity Calculations}
+
+\subsection{Definition}
+The purity $\gamma$ of a density matrix $\rho$ is:
+\[
+\gamma = \operatorname{Tr}(\rho^2)
+\]
+
+For a pure state: $\gamma = 1$ \\
+For a mixed state: $\gamma < 1$
+
+\subsection{Calculations for Each Step}
+
+\subsubsection{Step 0: $\gamma_0$}
+\[
+\rho_0^2 = 
+\begin{pmatrix}
+1 & 0 & 0 & 0 & 0 & 0 \\
+0 & 0 & 0 & 0 & 0 & 0 \\
+0 & 0 & 0 & 0 & 0 & 0 \\
+0 & 0 & 0 & 0 & 0 & 0 \\
+0 & 0 & 0 & 0 & 0 & 0 \\
+0 & 0 & 0 & 0 & 0 & 0
+\end{pmatrix}^2
+= 
+\begin{pmatrix}
+1 & 0 & 0 & 0 & 0 & 0 \\
+0 & 0 & 0 & 0 & 0 & 0 \\
+0 & 0 & 0 & 0 & 0 & 0 \\
+0 & 0 & 0 & 0 & 0 & 0 \\
+0 & 0 & 0 & 0 & 0 & 0 \\
+0 & 0 & 0 & 0 & 0 & 0
+\end{pmatrix}
+\]
+\[
+\gamma_0 = \operatorname{Tr}(\rho_0^2) = 1
+\]
+
+\subsubsection{Step 1: $\gamma_1$}
+\[
+\rho_1^2 = \frac{1}{4}
+\begin{pmatrix}
+0 & 0 & 0 & 0 & 0 & 0 \\
+0 & 0 & 0 & 0 & 0 & 0 \\
+0 & 0 & 0 & 0 & 0 & 0 \\
+0 & 0 & 0 & 1 & 1 & 0 \\
+0 & 0 & 0 & 1 & 1 & 0 \\
+0 & 0 & 0 & 0 & 0 & 0
+\end{pmatrix}^2
+= \frac{1}{4}
+\begin{pmatrix}
+0 & 0 & 0 & 0 & 0 & 0 \\
+0 & 0 & 0 & 0 & 0 & 0 \\
+0 & 0 & 0 & 0 & 0 & 0 \\
+0 & 0 & 0 & 2 & 2 & 0 \\
+0 & 0 & 0 & 2 & 2 & 0 \\
+0 & 0 & 0 & 0 & 0 & 0
+\end{pmatrix}
+= \frac{1}{2}
+\begin{pmatrix}
+0 & 0 & 0 & 0 & 0 & 0 \\
+0 & 0 & 0 & 0 & 0 & 0 \\
+0 & 0 & 0 & 0 & 0 & 0 \\
+0 & 0 & 0 & 1 & 1 & 0 \\
+0 & 0 & 0 & 1 & 1 & 0 \\
+0 & 0 & 0 & 0 & 0 & 0
+\end{pmatrix}
+\]
+\[
+\gamma_1 = \operatorname{Tr}(\rho_1^2) = 0 + 0 + 0 + \frac{1}{2} + \frac{1}{2} + 0 = 1
+\]
+
+\subsubsection{Step 2: $\gamma_2$}
+First, compute $\rho_2^2$:
+\[
+\rho_2 = 
+\begin{pmatrix}
+\frac{1}{4} & \frac{1}{4} & \frac{1}{4} & 0 & 0 & -\frac{1}{4} \\
+\frac{1}{4} & \frac{1}{4} & \frac{1}{4} & 0 & 0 & -\frac{1}{4} \\
+\frac{1}{4} & \frac{1}{4} & \frac{1}{4} & 0 & 0 & -\frac{1}{4} \\
+0 & 0 & 0 & 0 & 0 & 0 \\
+0 & 0 & 0 & 0 & 0 & 0 \\
+-\frac{1}{4} & -\frac{1}{4} & -\frac{1}{4} & 0 & 0 & \frac{1}{4}
+\end{pmatrix}
+\]
+
+Multiply row 1 by column 1 of $\rho_2$:
+\[
+(\rho_2^2)_{11} = \frac{1}{4}\cdot\frac{1}{4} + \frac{1}{4}\cdot\frac{1}{4} + \frac{1}{4}\cdot\frac{1}{4} + 0\cdot0 + 0\cdot0 + \left(-\frac{1}{4}\right)\cdot\left(-\frac{1}{4}\right)
+= \frac{1}{16} + \frac{1}{16} + \frac{1}{16} + 0 + 0 + \frac{1}{16} = \frac{4}{16} = \frac{1}{4}
+\]
+
+The trace (sum of diagonal elements) of $\rho_2^2$ will be:
+\[
+\operatorname{Tr}(\rho_2^2) = (\rho_2^2)_{11} + (\rho_2^2)_{22} + \cdots + (\rho_2^2)_{66}
+\]
+
+All diagonal elements are the same by symmetry: $\frac{1}{4}$ for first three, 0 for middle two, $\frac{1}{4}$ for last one:
+\[
+\gamma_2 = \frac{1}{4} + \frac{1}{4} + \frac{1}{4} + 0 + 0 + \frac{1}{4} = 1
+\]
+
+\subsubsection{Step 3: $\gamma_3$}
+Similar calculation gives $\gamma_3 = 1$.
+
+\subsection{Conclusion for purity calculations}
+All $\gamma_n = 1$, confirming our states remain pure under unitary evolution.
+
+\section{Entanglement Analysis: Coin vs Position}
+
+\subsection{Reduced Density Matrices}
+
+For our two part system (coin $\otimes$ position), we can trace out the coint and then position subsystems to calculate entanglement.
+
+\subsubsection{Tracing Out Position (Get Coin Density Matrix)}
+\[
+\rho_{\text{coin}} = \operatorname{Tr}_{\text{position}}(\rho)
+\]
+
+For a state $|\psi\rangle = \sum_{c,x} \alpha_{c,x} |c,x\rangle$:
+\[
+(\rho_{\text{coin}})_{c,c'} = \sum_{x=0}^{2} \alpha_{c,x} \alpha_{c',x}^*
+\]
+
+\subsubsection{Tracing Out Coin (Get Position Density Matrix)}
+\[
+\rho_{\text{pos}} = \operatorname{Tr}_{\text{coin}}(\rho)
+\]
+\[
+(\rho_{\text{pos}})_{x,x'} = \sum_{c=0}^{1} \alpha_{c,x} \alpha_{c,x'}^*
+\]
+
+\subsection{Step-by-Step Calculations}
+
+\subsubsection{Step 0: Initial State $|0,0\rangle$}
+
+\[
+|\psi_0\rangle = |0,0\rangle \quad \alpha_{0,0} = 1, \text{ all others } 0
+\]
+
+Coin reduced matrix:
+\[
+\rho_{\text{coin}}^{(0)} = 
+\begin{pmatrix}
+\sum_x |\alpha_{0,x}|^2 & \sum_x \alpha_{0,x}\alpha_{1,x}^* \\
+\sum_x \alpha_{1,x}\alpha_{0,x}^* & \sum_x |\alpha_{1,x}|^2
+\end{pmatrix}
+= 
+\begin{pmatrix}
+1 & 0 \\
+0 & 0
+\end{pmatrix}
+\]
+
+Eigenvalues: $\lambda_1 = 1, \lambda_2 = 0$
+
+\subsubsection{Step 1: $|\psi_1\rangle = \frac{1}{\sqrt{2}}|1,1\rangle + \frac{1}{\sqrt{2}}|0,2\rangle$}
+
+Amplitudes: $\alpha_{1,1} = \frac{1}{\sqrt{2}}, \alpha_{0,2} = \frac{1}{\sqrt{2}}$, others 0.
+
+Coin reduced matrix:
+\begin{align*}
+(\rho_{\text{coin}}^{(1)})_{00} &= \sum_x |\alpha_{0,x}|^2 = |\alpha_{0,0}|^2 + |\alpha_{0,1}|^2 + |\alpha_{0,2}|^2 = 0 + 0 + \frac{1}{2} = \frac{1}{2} \\
+(\rho_{\text{coin}}^{(1)})_{11} &= \sum_x |\alpha_{1,x}|^2 = |\alpha_{1,0}|^2 + |\alpha_{1,1}|^2 + |\alpha_{1,2}|^2 = 0 + \frac{1}{2} + 0 = \frac{1}{2} \\
+(\rho_{\text{coin}}^{(1)})_{01} &= \sum_x \alpha_{0,x}\alpha_{1,x}^* = \alpha_{0,0}\alpha_{1,0}^* + \alpha_{0,1}\alpha_{1,1}^* + \alpha_{0,2}\alpha_{1,2}^* \\
+&= 0\cdot0 + 0\cdot\frac{1}{\sqrt{2}} + \frac{1}{\sqrt{2}}\cdot0 = 0
+\end{align*}
+
+\[
+\rho_{\text{coin}}^{(1)} = 
+\begin{pmatrix}
+\frac{1}{2} & 0 \\
+0 & \frac{1}{2}
+\end{pmatrix}
+\]
+
+Eigenvalues: $\lambda_1 = \frac{1}{2}, \lambda_2 = \frac{1}{2}$
+
+\subsubsection{Step 2: $|\psi_2\rangle = \frac{1}{2}|0,0\rangle + \frac{1}{2}|1,0\rangle + \frac{1}{2}|0,1\rangle - \frac{1}{2}|1,2\rangle$}
+
+Amplitudes: $\alpha_{0,0} = \frac{1}{2}, \alpha_{1,0} = \frac{1}{2}, \alpha_{0,1} = \frac{1}{2}, \alpha_{1,2} = -\frac{1}{2}$.
+
+Coin reduced matrix:
+\begin{align*}
+(\rho_{\text{coin}}^{(2)})_{00} &= |\frac{1}{2}|^2 + |\frac{1}{2}|^2 + 0 = \frac{1}{4} + \frac{1}{4} = \frac{1}{2} \\
+(\rho_{\text{coin}}^{(2)})_{11} &= |\frac{1}{2}|^2 + 0 + |-\frac{1}{2}|^2 = \frac{1}{4} + \frac{1}{4} = \frac{1}{2} \\
+(\rho_{\text{coin}}^{(2)})_{01} &= \alpha_{0,0}\alpha_{1,0}^* + \alpha_{0,1}\alpha_{1,1}^* + \alpha_{0,2}\alpha_{1,2}^* \\
+&= \frac{1}{2}\cdot\left(\frac{1}{2}\right)^* + \frac{1}{2}\cdot0 + 0\cdot\left(-\frac{1}{2}\right)^* = \frac{1}{4}
+\end{align*}
+
+\[
+\rho_{\text{coin}}^{(2)} = 
+\begin{pmatrix}
+\frac{1}{2} & \frac{1}{4} \\
+\frac{1}{4} & \frac{1}{2}
+\end{pmatrix}
+\]
+
+Find eigenvalues: $\det\left(\rho_{\text{coin}}^{(2)} - \lambda I\right) = 0$
+\[
+\left|\begin{matrix}
+\frac{1}{2} - \lambda & \frac{1}{4} \\
+\frac{1}{4} & \frac{1}{2} - \lambda
+\end{matrix}\right| = (\frac{1}{2} - \lambda)^2 - \left(\frac{1}{4}\right)^2 = 0
+\]
+\[
+(\frac{1}{2} - \lambda)^2 = \frac{1}{16} \Rightarrow \frac{1}{2} - \lambda = \pm \frac{1}{4}
+\]
+\[
+\lambda = \frac{1}{2} \pm \frac{1}{4} = \frac{3}{4}, \frac{1}{4}
+\]
+
+\subsection{Von Neumann Entropy}
+
+Entanglement entropy:
+\[
+S(\rho) = -\operatorname{Tr}(\rho \log_2 \rho) = -\sum_i \lambda_i \log_2 \lambda_i
+\]
+
+\subsubsection{Step 0: $S_0$}
+Eigenvalues: $\lambda_1 = 1, \lambda_2 = 0$
+\[
+S_0 = -[1 \cdot \log_2 1 + 0 \cdot \log_2 0] = -[0 + 0] = 0
+\]
+No entanglement.
+
+\subsubsection{Step 1: $S_1$}
+Eigenvalues: $\lambda_1 = \frac{1}{2}, \lambda_2 = \frac{1}{2}$
+\[
+S_1 = -\left[\frac{1}{2} \log_2 \frac{1}{2} + \frac{1}{2} \log_2 \frac{1}{2}\right] = -\left[-\frac{1}{2} - \frac{1}{2}\right] = 1
+\]
+Maximal entanglement (1 bit of entanglement).
+
+\subsubsection{Step 2: $S_2$}
+Eigenvalues: $\lambda_1 = \frac{3}{4}, \lambda_2 = \frac{1}{4}$
+\[
+S_2 = -\left[\frac{3}{4} \log_2 \frac{3}{4} + \frac{1}{4} \log_2 \frac{1}{4}\right]
+\]
+
+Calculate numerically:
+\[
+\log_2 \frac{3}{4} = \log_2 3 - \log_2 4 = 1.585 - 2 = -0.415
+\]
+\[
+\log_2 \frac{1}{4} = -2
+\]
+\[
+S_2 = -\left[\frac{3}{4} \cdot (-0.415) + \frac{1}{4} \cdot (-2)\right] = -\left[-0.31125 - 0.5\right] = 0.81125
+\]
+
+Approximately: $S_2 \approx 0.811$ bits of entanglement.
+
+\section{Step 3: Complete Entanglement Entropy Calculation}
+
+\subsection{State Vector for Step 3}
+From our previous evolution:
+\[
+|\psi_3\rangle = \frac{1}{2\sqrt{2}}|0,0\rangle + \frac{1}{2\sqrt{2}}|1,0\rangle - \frac{1}{2\sqrt{2}}|0,1\rangle + \frac{1}{\sqrt{2}}|0,2\rangle + \frac{1}{2\sqrt{2}}|1,2\rangle
+\]
+
+Let \( a = \frac{1}{2\sqrt{2}} \). Since \( \frac{1}{\sqrt{2}} = \frac{2}{2\sqrt{2}} = 2a \), we can rewrite:
+\[
+|\psi_3\rangle = a|0,0\rangle + a|1,0\rangle - a|0,1\rangle + 2a|0,2\rangle + a|1,2\rangle
+\]
+
+Non-zero amplitudes:
+\begin{align*}
+\alpha_{0,0} &= a, \quad \alpha_{1,0} = a, \quad \alpha_{0,1} = -a, \\
+\alpha_{0,2} &= 2a, \quad \alpha_{1,2} = a, \quad \text{all others } = 0
+\end{align*}
+
+\subsection{Reduced Coin Density Matrix $\rho_{\text{coin}}^{(3)}$}
+Recall the formula:
+\[
+\rho_{\text{coin}} = 
+\begin{pmatrix}
+\sum_x |\alpha_{0,x}|^2 & \sum_x \alpha_{0,x} \alpha_{1,x}^* \\
+\sum_x \alpha_{1,x} \alpha_{0,x}^* & \sum_x |\alpha_{1,x}|^2
+\end{pmatrix}
+\]
+
+\subsubsection{1. Top-left element: $\sum_x |\alpha_{0,x}|^2$}
+\[
+\sum_x |\alpha_{0,x}|^2 = |\alpha_{0,0}|^2 + |\alpha_{0,1}|^2 + |\alpha_{0,2}|^2
+= |a|^2 + |-a|^2 + |2a|^2 = a^2 + a^2 + 4a^2 = 6a^2
+\]
+
+\subsubsection{2. Bottom-right element: $\sum_x |\alpha_{1,x}|^2$}
+\[
+\sum_x |\alpha_{1,x}|^2 = |\alpha_{1,0}|^2 + |\alpha_{1,1}|^2 + |\alpha_{1,2}|^2
+= |a|^2 + 0 + |a|^2 = a^2 + a^2 = 2a^2
+\]
+
+\subsubsection{3. Top-right element: $\sum_x \alpha_{0,x} \alpha_{1,x}^*$}
+\[
+\sum_x \alpha_{0,x} \alpha_{1,x}^* = \alpha_{0,0}\alpha_{1,0}^* + \alpha_{0,1}\alpha_{1,1}^* + \alpha_{0,2}\alpha_{1,2}^*
+= a \cdot a^* + (-a) \cdot 0 + (2a) \cdot a^*
+= a^2 + 0 + 2a^2 = 3a^2
+\]
+
+\subsubsection{4. Complete Matrix}
+\[
+\rho_{\text{coin}}^{(3)} = 
+\begin{pmatrix}
+6a^2 & 3a^2 \\
+3a^2 & 2a^2
+\end{pmatrix}
+= a^2 \begin{pmatrix}
+6 & 3 \\
+3 & 2
+\end{pmatrix}
+\]
+
+\subsection{Normalization Check}
+First, let's compute $a^2$ explicitly:
+\[
+a = \frac{1}{2\sqrt{2}}, \quad a^2 = \frac{1}{4 \cdot 2} = \frac{1}{8}
+\]
+So:
+\[
+\rho_{\text{coin}}^{(3)} = \frac{1}{8} \begin{pmatrix}
+6 & 3 \\
+3 & 2
+\end{pmatrix}
+\]
+
+Trace:
+\[
+\operatorname{Tr}(\rho_{\text{coin}}^{(3)}) = \frac{1}{8}(6 + 2) = \frac{1}{8} \cdot 8 = 1
+\]
+Correctly normalized.
+
+\subsection{Eigenvalues Calculation}
+Find eigenvalues $\lambda$ of $\frac{1}{8} \begin{pmatrix} 6 & 3 \\ 3 & 2 \end{pmatrix}$.
+
+Solve $\det\left(\begin{pmatrix} 6 & 3 \\ 3 & 2 \end{pmatrix} - \lambda' I\right) = 0$ where $\lambda' = 8\lambda$:
+\[
+\det\begin{pmatrix}
+6 - \lambda' & 3 \\
+3 & 2 - \lambda'
+\end{pmatrix} = 0
+\]
+\[
+(6 - \lambda')(2 - \lambda') - 9 = 0
+\]
+\[
+\lambda'^2 - 8\lambda' + 12 - 9 = 0
+\]
+\[
+\lambda'^2 - 8\lambda' + 3 = 0
+\]
+
+Solve quadratic:
+\[
+\lambda' = \frac{8 \pm \sqrt{64 - 12}}{2} = \frac{8 \pm \sqrt{52}}{2} = \frac{8 \pm 2\sqrt{13}}{2} = 4 \pm \sqrt{13}
+\]
+
+Thus:
+\[
+\lambda'_{\pm} = 4 \pm \sqrt{13} \approx 4 \pm 3.6056 \approx 7.6056, 0.3944
+\]
+
+Convert back to $\lambda = \lambda'/8$:
+\[
+\lambda_1 = \frac{4 + \sqrt{13}}{8} \approx \frac{7.6056}{8} \approx 0.9507
+\]
+\[
+\lambda_2 = \frac{4 - \sqrt{13}}{8} \approx \frac{0.3944}{8} \approx 0.0493
+\]
+
+Check sum: $0.9507 + 0.0493 = 1.0000$
+
+\subsection{Von Neumann Entropy Calculation}
+\[
+S_3 = -\lambda_1 \log_2 \lambda_1 - \lambda_2 \log_2 \lambda_2
+\]
+
+Calculate:
+\begin{align*}
+\log_2 \lambda_1 &= \log_2(0.9507) \approx -0.0740 \\
+\log_2 \lambda_2 &= \log_2(0.0493) \approx -4.3419
+\end{align*}
+
+Thus:
+\[
+S_3 = -[0.9507 \cdot (-0.0740) + 0.0493 \cdot (-4.3419)]
+= -[-0.0704 - 0.2141] = -[-0.2845] = 0.2845
+\]
+
+More precisely:
+\[
+S_3 = -\left[\frac{4+\sqrt{13}}{8} \log_2\left(\frac{4+\sqrt{13}}{8}\right) + \frac{4-\sqrt{13}}{8} \log_2\left(\frac{4-\sqrt{13}}{8}\right)\right]
+\]
+
+Numerically:
+\[
+S_3 \approx 0.2847 
+\]
+
+\section{Conclusion Summary Tables}
+We continue to calculate the purity and entanglement metrics of the walk for the first 8 steps as we know there is no revival at step 8 for a Hadamard coin.  The calculations for these steps are included in the appendix.
+
+The following table presents the results for the entanglement entropy ($S$) of a Hadamard walk on a 3-cycle, calculated from first principles using the reduced coin density matrix $\rho_{\text{coin}}^{(n)}$.
+
+\begin{table}[htbp]
+\centering
+\begin{tabular}{c|ccc|cc}
+Step $n$ & $P(0)$ & $P(1)$ & $P(2)$ & $\gamma$ & $S$ \\ 
+\hline
+0 & 1.0000 & 0.0000 & 0.0000 & 1.000000 & 0.000000 \\
+1 & 0.0000 & 0.5000 & 0.5000 & 1.000000 & 1.000000 \\
+2 & 0.5000 & 0.2500 & 0.2500 & 1.000000 & 0.811278 \\
+3 & 0.2500 & 0.1250 & 0.6250 & 1.000000 & 0.283442 \\
+4 & 0.1250 & 0.5625 & 0.3125 & 1.000000 & 0.404772 \\
+5 & 0.5625 & 0.1563 & 0.2813 & 1.000000 & 0.745078 \\
+6 & 0.1563 & 0.1406 & 0.7031 & 1.000000 & 0.486632 \\
+7 & 0.1406 & 0.6641 & 0.1953 & 1.000000 & 0.613772 \\
+8 & 0.6641 & 0.0039 & 0.3320 & 1.000000 & 0.904306 \\
+\end{tabular}
+\caption{Complete quantum walk evolution for Hadamard coin on a 3-cycle. Purity $\gamma = \mathrm{Tr}(\rho^2)$ remains 1 for all steps. Entanglement entropy $S$ shows complex dynamics with no revival at step 8, contrary to initial expectations. Note that step 8 does not return to the initial state.}
+\label{tab:walk_results}
+\end{table}
+
+\begin{table}[htbp]
+\centering
+\begin{verbatim}
+Program output:
+============================================================
+Hadamard Coin (rho = 0.5000)
+============================================================
+
+Step | P(0)    P(1)    P(2)        | Purity   | Entropy S (bits)
+-----------------------------------------------------------------
+   0 | 1.0000   0.0000   0.0000   | 1.000000  | -0.000000
+   1 | 0.0000   0.5000   0.5000   | 1.000000  | 1.000000
+   2 | 0.5000   0.2500   0.2500   | 1.000000  | 0.811278
+   3 | 0.2500   0.1250   0.6250   | 1.000000  | 0.283442
+   4 | 0.1250   0.5625   0.3125   | 1.000000  | 0.404772
+   5 | 0.5625   0.1563   0.2813   | 1.000000  | 0.745078
+   6 | 0.1563   0.1406   0.7031   | 1.000000  | 0.486632
+   7 | 0.1406   0.6641   0.1953   | 1.000000  | 0.613772
+   8 | 0.6641   0.0039   0.3320   | 1.000000  | 0.904306
+
+Revival period: None found (up to step 8)
+\end{verbatim}
+\caption{This is the output of the python program listed in the appendix which experimentally calculates the probability, purity and entanglement entropy for the first 9 steps of the walk}
+\label{tab:exp_results}
+\end{table}
+
+
+
+\subsection{Interpretation}
+The entanglement entropy shows interesting dynamics:
+\begin{itemize}
+\item \textbf{Step 0}: $S=0$ (initial state, no entanglement)
+\item \textbf{Step 1}: $S=1$ (maximal entanglement between coin and position)
+\item \textbf{Step 2}: $S\approx0.811$ (entanglement decreases but remains strong)
+\item \textbf{Step 3}: $S\approx0.285$ (entanglement decreases further but is still non-zero)
+\item \textbf{Steps 4-7} (entanglement oscillates but is 
+non-zero)
+\item \textbf{Step 8}: $S=0$ (No return to initial state - no revival due to eivenvalues)
+\end{itemize}
+
+The entanglement oscillates as the walk evolves, which is characteristic of unitary quantum dynamics.  
+
+
+\section{Key Observations}
+
+\begin{enumerate}
+\item \textbf{Purity remains 1}: Under unitary evolution, quantum states stay pure.
+
+\item \textbf{Entanglement varies}: Coin and position can become entangled even though the total system remains pure.
+
+\item \textbf{Maximal entanglement at step 1}: $S=1$ means coin and position are maximally correlated.
+
+\item \textbf{Quantum interference}: Probability distribution is not uniform due to quantum interference effects.
+\end{enumerate}
+
+
+\section{Conclusion}
+
+This complete example demonstrates how to:
+\begin{enumerate}
+\item Set up a quantum walk on a 3-point circle
+\item Calculate the state evolution step by step
+\item Construct density matrices from pure states
+\item Compute purity to verify states remain pure
+\item Calculate reduced density matrices by tracing out subsystems
+\item Compute von Neumann entropy to quantify entanglement
+\end{enumerate}
+
+The framework presented here can be extended to larger systems, multiple walkers, different coin operators, and the study of entanglement dynamics in quantum walks.
+
+\bibliography{references}
+
+\appendix
+\section{Appendix: Detailed Entanglement Calculations for Steps 4-8}
+\label{app:detailed_calcs}
+
+This appendix provides the detailed, step-by-step derivation of the entanglement entropy $S_n$ for steps $n=4$ through $n=8$ for the Hadamard walk on a 3-cycle, using the exact state vectors derived from unitary evolution. We define $a = \frac{1}{2\sqrt{2}}$ for convenience.
+
+\subsection{General Method}
+For a pure state $|\psi_n\rangle = \sum_{c,x} \alpha_{c,x}^{(n)} |c,x\rangle$, the reduced density matrix for the coin is:
+\[
+\rho_{\text{coin}}^{(n)} =
+\begin{pmatrix}
+\sum_{x} |\alpha_{0,x}^{(n)}|^2 & \sum_{x} \alpha_{0,x}^{(n)} (\alpha_{1,x}^{(n)})^* \\
+\sum_{x} \alpha_{1,x}^{(n)} (\alpha_{0,x}^{(n)})^* & \sum_{x} |\alpha_{1,x}^{(n)}|^2
+\end{pmatrix}.
+\]
+The von Neumann entanglement entropy is then $S_n = -\operatorname{Tr}(\rho_{\text{coin}}^{(n)} \log_2 \rho_{\text{coin}}^{(n)}) = -\sum_{i} \lambda_i \log_2 \lambda_i$, where $\lambda_i$ are the eigenvalues of $\rho_{\text{coin}}^{(n)}$.
+
+% ================ STEP 4 ================
+\subsection{Step 4}
+\label{app:step4}
+
+\textbf{State Vector:}
+\[
+|\psi_4\rangle = \frac{1}{4} \begin{pmatrix} -1 \\ 1 \\ 3 \\ 0 \\ 2 \\ -1 \end{pmatrix}
+= -\frac{1}{4}|0,0\rangle + \frac{1}{4}|1,0\rangle + \frac{3}{4}|0,1\rangle + 0|1,1\rangle + \frac{2}{4}|0,2\rangle - \frac{1}{4}|1,2\rangle
+\]
+
+\textbf{Non-zero amplitudes:}
+\begin{align*}
+\alpha_{0,0} &= -\frac{1}{4}, & \alpha_{1,0} &= \frac{1}{4}, \\
+\alpha_{0,1} &= \frac{3}{4}, & \alpha_{1,1} &= 0, \\
+\alpha_{0,2} &= \frac{2}{4} = \frac{1}{2}, & \alpha_{1,2} &= -\frac{1}{4}
+\end{align*}
+
+\textbf{Coin Density Matrix:}
+\begin{align*}
+(\rho_{\text{coin}}^{(4)})_{00} &= |\alpha_{0,0}|^2 + |\alpha_{0,1}|^2 + |\alpha_{0,2}|^2 = \left|\frac{1}{4}\right|^2 + \left|\frac{3}{4}\right|^2 + \left|\frac{1}{2}\right|^2 = \frac{1}{16} + \frac{9}{16} + \frac{1}{4} = \frac{1}{16} + \frac{9}{16} + \frac{4}{16} = \frac{14}{16} = \frac{7}{8} \\
+(\rho_{\text{coin}}^{(4)})_{11} &= |\alpha_{1,0}|^2 + |\alpha_{1,1}|^2 + |\alpha_{1,2}|^2 = \left|\frac{1}{4}\right|^2 + 0 + \left|\frac{1}{4}\right|^2 = \frac{1}{16} + \frac{1}{16} = \frac{2}{16} = \frac{1}{8} \\
+(\rho_{\text{coin}}^{(4)})_{01} &= \alpha_{0,0}\alpha_{1,0}^* + \alpha_{0,1}\alpha_{1,1}^* + \alpha_{0,2}\alpha_{1,2}^* \\
+&= \left(-\frac{1}{4}\right)\left(\frac{1}{4}\right) + \left(\frac{3}{4}\right)\cdot 0 + \left(\frac{1}{2}\right)\left(-\frac{1}{4}\right) \\
+&= -\frac{1}{16} + 0 - \frac{1}{8} = -\frac{1}{16} - \frac{2}{16} = -\frac{3}{16}
+\end{align*}
+
+\[
+\rho_{\text{coin}}^{(4)} = \begin{pmatrix} \frac{7}{8} & -\frac{3}{16} \\ -\frac{3}{16} & \frac{1}{8} \end{pmatrix}
+= \frac{1}{16} \begin{pmatrix} 14 & -3 \\ -3 & 2 \end{pmatrix}
+\]
+
+\textbf{Eigenvalues:} Solve $\det(\rho_{\text{coin}}^{(4)} - \lambda I) = 0$:
+\[
+\det\begin{pmatrix} \frac{7}{8} - \lambda & -\frac{3}{16} \\ -\frac{3}{16} & \frac{1}{8} - \lambda \end{pmatrix} = 0
+\]
+\[
+\left(\frac{7}{8} - \lambda\right)\left(\frac{1}{8} - \lambda\right) - \left(-\frac{3}{16}\right)\left(-\frac{3}{16}\right) = 0
+\]
+\[
+\left(\frac{7}{8} - \lambda\right)\left(\frac{1}{8} - \lambda\right) - \frac{9}{256} = 0
+\]
+
+
+
+Multiplying out the eigenvalue equation gives:
+
+\[
+\lambda^2 - \left(\frac{7}{8} + \frac{1}{8}\right)\lambda + \frac{7}{64} - \frac{9}{256} = 0
+\]
+\[
+\lambda^2 - \lambda + \frac{28}{256} - \frac{9}{256} = 0
+\]
+\[
+\lambda^2 - \lambda + \frac{19}{256} = 0
+\]
+Solving gives:
+\[
+\lambda = \frac{1 \pm \sqrt{1 - \frac{76}{256}}}{2} = \frac{1 \pm \sqrt{\frac{180}{256}}}{2} = \frac{1 \pm \frac{\sqrt{180}}{16}}{2} = \frac{1 \pm \frac{6\sqrt{5}}{16}}{2}
+\]
+\[
+\lambda = \frac{1 \pm \frac{3\sqrt{5}}{8}}{2} = \frac{8 \pm 3\sqrt{5}}{16}
+\]
+
+Numerically:
+\[
+\lambda_1 = \frac{8 + 3\sqrt{5}}{16} \approx \frac{8 + 6.7082}{16} = \frac{14.7082}{16} = 0.91926
+\]
+\[
+\lambda_2 = \frac{8 - 3\sqrt{5}}{16} \approx \frac{8 - 6.7082}{16} = \frac{1.2918}{16} = 0.08074
+\]
+
+\textbf{Entropy Calculation:}
+\[
+S_4 = -\lambda_1 \log_2 \lambda_1 - \lambda_2 \log_2 \lambda_2
+\]
+\[
+= -0.91926 \log_2 0.91926 - 0.08074 \log_2 0.08074
+\]
+\[
+= -0.91926 \cdot (-0.1214) - 0.08074 \cdot (-3.6309)
+\]
+\[
+= 0.1116 + 0.2931 = 0.4047 \quad 
+\]
+
+Perfect match with experimental S=0.404772!
+
+% ================ STEP 5 ================
+\subsection{Step 5}
+\label{app:step5}
+
+\textbf{State Vector:}
+\[
+|\psi_5\rangle = \frac{1}{4\sqrt{2}} \begin{pmatrix} 3 \\ 3 \\ 1 \\ -2 \\ 0 \\ 3 \end{pmatrix}
+= \frac{3}{4\sqrt{2}}|0,0\rangle + \frac{3}{4\sqrt{2}}|1,0\rangle + \frac{1}{4\sqrt{2}}|0,1\rangle - \frac{2}{4\sqrt{2}}|1,1\rangle + 0|0,2\rangle + \frac{3}{4\sqrt{2}}|1,2\rangle
+\]
+
+\textbf{Non-zero amplitudes:}
+\begin{align*}
+\alpha_{0,0} &= \frac{3}{4\sqrt{2}}, & \alpha_{1,0} &= \frac{3}{4\sqrt{2}}, \\
+\alpha_{0,1} &= \frac{1}{4\sqrt{2}}, & \alpha_{1,1} &= -\frac{2}{4\sqrt{2}} = -\frac{1}{2\sqrt{2}}, \\
+\alpha_{0,2} &= 0, & \alpha_{1,2} &= \frac{3}{4\sqrt{2}}
+\end{align*}
+
+\textbf{Coin Density Matrix:}
+\begin{align*}
+(\rho_{\text{coin}}^{(5)})_{00} &= |\alpha_{0,0}|^2 + |\alpha_{0,1}|^2 + |\alpha_{0,2}|^2 = \left|\frac{3}{4\sqrt{2}}\right|^2 + \left|\frac{1}{4\sqrt{2}}\right|^2 + 0 = \frac{9}{32} + \frac{1}{32} = \frac{10}{32} = \frac{5}{16} \\
+(\rho_{\text{coin}}^{(5)})_{11} &= |\alpha_{1,0}|^2 + |\alpha_{1,1}|^2 + |\alpha_{1,2}|^2 = \left|\frac{3}{4\sqrt{2}}\right|^2 + \left|-\frac{1}{2\sqrt{2}}\right|^2 + \left|\frac{3}{4\sqrt{2}}\right|^2 = \frac{9}{32} + \frac{1}{8} + \frac{9}{32} = \frac{9}{32} + \frac{4}{32} + \frac{9}{32} = \frac{22}{32} = \frac{11}{16} \\
+(\rho_{\text{coin}}^{(5)})_{01} &= \alpha_{0,0}\alpha_{1,0}^* + \alpha_{0,1}\alpha_{1,1}^* + \alpha_{0,2}\alpha_{1,2}^* \\
+&= \left(\frac{3}{4\sqrt{2}}\right)\left(\frac{3}{4\sqrt{2}}\right) + \left(\frac{1}{4\sqrt{2}}\right)\left(-\frac{1}{2\sqrt{2}}\right) + 0\cdot\left(\frac{3}{4\sqrt{2}}\right) \\
+&= \frac{9}{32} - \frac{1}{16} = \frac{9}{32} - \frac{2}{32} = \frac{7}{32}
+\end{align*}
+
+\[
+\rho_{\text{coin}}^{(5)} = \begin{pmatrix} \frac{5}{16} & \frac{7}{32} \\ \frac{7}{32} & \frac{11}{16} \end{pmatrix}
+= \frac{1}{32} \begin{pmatrix} 10 & 7 \\ 7 & 22 \end{pmatrix}
+\]
+
+\textbf{Eigenvalues:} Solve $\det(\rho_{\text{coin}}^{(5)} - \lambda I) = 0$:
+\[
+\det\begin{pmatrix} \frac{5}{16} - \lambda & \frac{7}{32} \\ \frac{7}{32} & \frac{11}{16} - \lambda \end{pmatrix} = 0
+\]
+\[
+\left(\frac{5}{16} - \lambda\right)\left(\frac{11}{16} - \lambda\right) - \frac{49}{1024} = 0
+\]
+\[
+\lambda^2 - \left(\frac{5}{16} + \frac{11}{16}\right)\lambda + \frac{55}{256} - \frac{49}{1024} = 0
+\]
+\[
+\lambda^2 - \lambda + \frac{220}{1024} - \frac{49}{1024} = 0
+\]
+\[
+\lambda^2 - \lambda + \frac{171}{1024} = 0
+\]
+
+\[
+\lambda = \frac{1 \pm \sqrt{1 - \frac{684}{1024}}}{2} = \frac{1 \pm \sqrt{\frac{340}{1024}}}{2} = \frac{1 \pm \frac{\sqrt{340}}{32}}{2} = \frac{1 \pm \frac{2\sqrt{85}}{32}}{2} = \frac{1 \pm \frac{\sqrt{85}}{16}}{2}
+\]
+\[
+\lambda = \frac{16 \pm \sqrt{85}}{32}
+\]
+
+Numerically:
+\[
+\lambda_1 = \frac{16 + \sqrt{85}}{32} \approx \frac{16 + 9.2195}{32} = \frac{25.2195}{32} = 0.78811
+\]
+\[
+\lambda_2 = \frac{16 - \sqrt{85}}{32} \approx \frac{16 - 9.2195}{32} = \frac{6.7805}{32} = 0.21189
+\]
+
+\textbf{Entropy:}
+\[
+S_5 = -\lambda_1 \log_2 \lambda_1 - \lambda_2 \log_2 \lambda_2
+\]
+\[
+= -0.78811 \log_2 0.78811 - 0.21189 \log_2 0.21189
+\]
+\[
+= -0.78811 \cdot (-0.3434) - 0.21189 \cdot (-2.2387)
+\]
+\[
+= 0.2706 + 0.4744 = 0.7450 \quad 
+\]
+
+Perfect match with experimental S=0.745078!
+
+% ================ STEP 6 ================
+\subsection{Step 6}
+\label{app:step6}
+
+\textbf{State Vector:}
+\[
+|\psi_6\rangle = \frac{1}{8} \begin{pmatrix} -1 \\ -3 \\ 3 \\ 0 \\ 6 \\ 3 \end{pmatrix}
+= -\frac{1}{8}|0,0\rangle - \frac{3}{8}|1,0\rangle + \frac{3}{8}|0,1\rangle + 0|1,1\rangle + \frac{6}{8}|0,2\rangle + \frac{3}{8}|1,2\rangle
+\]
+
+\textbf{Non-zero amplitudes:}
+\begin{align*}
+\alpha_{0,0} &= -\frac{1}{8}, & \alpha_{1,0} &= -\frac{3}{8}, \\
+\alpha_{0,1} &= \frac{3}{8}, & \alpha_{1,1} &= 0, \\
+\alpha_{0,2} &= \frac{6}{8} = \frac{3}{4}, & \alpha_{1,2} &= \frac{3}{8}
+\end{align*}
+
+\textbf{Coin Density Matrix:}
+\begin{align*}
+(\rho_{\text{coin}}^{(6)})_{00} &= |\alpha_{0,0}|^2 + |\alpha_{0,1}|^2 + |\alpha_{0,2}|^2 = \left|\frac{1}{8}\right|^2 + \left|\frac{3}{8}\right|^2 + \left|\frac{3}{4}\right|^2 = \frac{1}{64} + \frac{9}{64} + \frac{9}{16} = \frac{1}{64} + \frac{9}{64} + \frac{36}{64} = \frac{46}{64} = \frac{23}{32} \\
+(\rho_{\text{coin}}^{(6)})_{11} &= |\alpha_{1,0}|^2 + |\alpha_{1,1}|^2 + |\alpha_{1,2}|^2 = \left|\frac{3}{8}\right|^2 + 0 + \left|\frac{3}{8}\right|^2 = \frac{9}{64} + \frac{9}{64} = \frac{18}{64} = \frac{9}{32} \\
+(\rho_{\text{coin}}^{(6)})_{01} &= \alpha_{0,0}\alpha_{1,0}^* + \alpha_{0,1}\alpha_{1,1}^* + \alpha_{0,2}\alpha_{1,2}^* \\
+&= \left(-\frac{1}{8}\right)\left(-\frac{3}{8}\right) + \left(\frac{3}{8}\right)\cdot 0 + \left(\frac{3}{4}\right)\left(\frac{3}{8}\right) \\
+&= \frac{3}{64} + 0 + \frac{9}{32} = \frac{3}{64} + \frac{18}{64} = \frac{21}{64}
+\end{align*}
+
+\[
+\rho_{\text{coin}}^{(6)} = \begin{pmatrix} \frac{23}{32} & \frac{21}{64} \\ \frac{21}{64} & \frac{9}{32} \end{pmatrix}
+= \frac{1}{64} \begin{pmatrix} 46 & 21 \\ 21 & 18 \end{pmatrix}
+\]
+
+\textbf{Eigenvalues:} Solve $\det(\rho_{\text{coin}}^{(6)} - \lambda I) = 0$:
+\[
+\det\begin{pmatrix} \frac{23}{32} - \lambda & \frac{21}{64} \\ \frac{21}{64} & \frac{9}{32} - \lambda \end{pmatrix} = 0
+\]
+\[
+\left(\frac{23}{32} - \lambda\right)\left(\frac{9}{32} - \lambda\right) - \frac{441}{4096} = 0
+\]
+\[
+\lambda^2 - \left(\frac{23}{32} + \frac{9}{32}\right)\lambda + \frac{207}{1024} - \frac{441}{4096} = 0
+\]
+\[
+\lambda^2 - \lambda + \frac{828}{4096} - \frac{441}{4096} = 0
+\]
+\[
+\lambda^2 - \lambda + \frac{387}{4096} = 0
+\]
+
+\[
+\lambda = \frac{1 \pm \sqrt{1 - \frac{1548}{4096}}}{2} = \frac{1 \pm \sqrt{\frac{2548}{4096}}}{2} = \frac{1 \pm \frac{\sqrt{2548}}{64}}{2} = \frac{1 \pm \frac{2\sqrt{637}}{64}}{2} = \frac{1 \pm \frac{\sqrt{637}}{32}}{2}
+\]
+\[
+\lambda = \frac{32 \pm \sqrt{637}}{64}
+\]
+
+Numerically:
+\[
+\sqrt{637} \approx 25.2389
+\]
+\[
+\lambda_1 = \frac{32 + 25.2389}{64} = \frac{57.2389}{64} = 0.89436
+\]
+\[
+\lambda_2 = \frac{32 - 25.2389}{64} = \frac{6.7611}{64} = 0.10564
+\]
+
+\textbf{Entropy:}
+\[
+S_6 = -\lambda_1 \log_2 \lambda_1 - \lambda_2 \log_2 \lambda_2
+\]
+\[
+= -0.89436 \log_2 0.89436 - 0.10564 \log_2 0.10564
+\]
+\[
+= -0.89436 \cdot (-0.1611) - 0.10564 \cdot (-3.2425)
+\]
+\[
+= 0.1441 + 0.3425 = 0.4866 \quad
+\]
+
+Perfect match with experimental S=0.486632!
+
+% ================ STEP 7 ================
+\subsection{Step 7}
+\label{app:step7}
+
+\textbf{State Vector:}
+\[
+|\psi_7\rangle = \frac{1}{8\sqrt{2}} \begin{pmatrix} 3 \\ 3 \\ 9 \\ 2 \\ -4 \\ 3 \end{pmatrix}
+= \frac{3}{8\sqrt{2}}|0,0\rangle + \frac{3}{8\sqrt{2}}|1,0\rangle + \frac{9}{8\sqrt{2}}|0,1\rangle + \frac{2}{8\sqrt{2}}|1,1\rangle - \frac{4}{8\sqrt{2}}|0,2\rangle + \frac{3}{8\sqrt{2}}|1,2\rangle
+\]
+
+\textbf{Non-zero amplitudes:}
+\begin{align*}
+\alpha_{0,0} &= \frac{3}{8\sqrt{2}}, & \alpha_{1,0} &= \frac{3}{8\sqrt{2}}, \\
+\alpha_{0,1} &= \frac{9}{8\sqrt{2}}, & \alpha_{1,1} &= \frac{2}{8\sqrt{2}} = \frac{1}{4\sqrt{2}}, \\
+\alpha_{0,2} &= -\frac{4}{8\sqrt{2}} = -\frac{1}{2\sqrt{2}}, & \alpha_{1,2} &= \frac{3}{8\sqrt{2}}
+\end{align*}
+
+\textbf{Coin Density Matrix:}
+\begin{align*}
+(\rho_{\text{coin}}^{(7)})_{00} &= |\alpha_{0,0}|^2 + |\alpha_{0,1}|^2 + |\alpha_{0,2}|^2 = \left|\frac{3}{8\sqrt{2}}\right|^2 + \left|\frac{9}{8\sqrt{2}}\right|^2 + \left|-\frac{1}{2\sqrt{2}}\right|^2 = \frac{9}{128} + \frac{81}{128} + \frac{1}{8} = \frac{9}{128} + \frac{81}{128} + \frac{16}{128} = \frac{106}{128} = \frac{53}{64} \\
+(\rho_{\text{coin}}^{(7)})_{11} &= |\alpha_{1,0}|^2 + |\alpha_{1,1}|^2 + |\alpha_{1,2}|^2 = \left|\frac{3}{8\sqrt{2}}\right|^2 + \left|\frac{1}{4\sqrt{2}}\right|^2 + \left|\frac{3}{8\sqrt{2}}\right|^2 = \frac{9}{128} + \frac{1}{32} + \frac{9}{128} = \frac{9}{128} + \frac{4}{128} + \frac{9}{128} = \frac{22}{128} = \frac{11}{64} \\
+(\rho_{\text{coin}}^{(7)})_{01} &= \alpha_{0,0}\alpha_{1,0}^* + \alpha_{0,1}\alpha_{1,1}^* + \alpha_{0,2}\alpha_{1,2}^* \\
+&= \left(\frac{3}{8\sqrt{2}}\right)\left(\frac{3}{8\sqrt{2}}\right) + \left(\frac{9}{8\sqrt{2}}\right)\left(\frac{1}{4\sqrt{2}}\right) + \left(-\frac{1}{2\sqrt{2}}\right)\left(\frac{3}{8\sqrt{2}}\right) \\
+&= \frac{9}{128} + \frac{9}{64} - \frac{3}{32} = \frac{9}{128} + \frac{18}{128} - \frac{12}{128} = \frac{15}{128}
+\end{align*}
+
+\[
+\rho_{\text{coin}}^{(7)} = \begin{pmatrix} \frac{53}{64} & \frac{15}{128} \\ \frac{15}{128} & \frac{11}{64} \end{pmatrix}
+= \frac{1}{128} \begin{pmatrix} 106 & 15 \\ 15 & 22 \end{pmatrix}
+\]
+
+\textbf{Eigenvalues:} Solve $\det(\rho_{\text{coin}}^{(7)} - \lambda I) = 0$:
+\[
+\det\begin{pmatrix} \frac{53}{64} - \lambda & \frac{15}{128} \\ \frac{15}{128} & \frac{11}{64} - \lambda \end{pmatrix} = 0
+\]
+\[
+\left(\frac{53}{64} - \lambda\right)\left(\frac{11}{64} - \lambda\right) - \frac{225}{16384} = 0
+\]
+\[
+\lambda^2 - \left(\frac{53}{64} + \frac{11}{64}\right)\lambda + \frac{583}{4096} - \frac{225}{16384} = 0
+\]
+\[
+\lambda^2 - \lambda + \frac{2332}{16384} - \frac{225}{16384} = 0
+\]
+\[
+\lambda^2 - \lambda + \frac{2107}{16384} = 0
+\]
+
+\[
+\lambda = \frac{1 \pm \sqrt{1 - \frac{8428}{16384}}}{2} = \frac{1 \pm \sqrt{\frac{7956}{16384}}}{2} = \frac{1 \pm \frac{\sqrt{7956}}{128}}{2} = \frac{1 \pm \frac{6\sqrt{221}}{128}}{2} = \frac{1 \pm \frac{3\sqrt{221}}{64}}{2}
+\]
+\[
+\lambda = \frac{64 \pm 3\sqrt{221}}{128}
+\]
+
+Numerically:
+\[
+\sqrt{221} \approx 14.8661
+\]
+\[
+\lambda_1 = \frac{64 + 3\cdot14.8661}{128} = \frac{64 + 44.5983}{128} = \frac{108.5983}{128} = 0.84842
+\]
+\[
+\lambda_2 = \frac{64 - 44.5983}{128} = \frac{19.4017}{128} = 0.15158
+\]
+
+\textbf{Entropy:}
+\[
+S_7 = -\lambda_1 \log_2 \lambda_1 - \lambda_2 \log_2 \lambda_2
+\]
+\[
+= -0.84842 \log_2 0.84842 - 0.15158 \log_2 0.15158
+\]
+\[
+= -0.84842 \cdot (-0.2372) - 0.15158 \cdot (-2.7225)
+\]
+\[
+= 0.2013 + 0.4125 = 0.6138 \quad
+\]
+
+Perfect match with experimental S=0.613772!
+
+% ================ STEP 8 ================
+\subsection{Step 8}
+\label{app:step8}
+
+\textbf{State Vector:}
+\[
+|\psi_8\rangle = \frac{1}{16} \begin{pmatrix} 11 \\ -7 \\ -1 \\ 0 \\ 6 \\ 7 \end{pmatrix}
+= \frac{11}{16}|0,0\rangle - \frac{7}{16}|1,0\rangle - \frac{1}{16}|0,1\rangle + 0|1,1\rangle + \frac{6}{16}|0,2\rangle + \frac{7}{16}|1,2\rangle
+\]
+
+\textbf{Non-zero amplitudes:}
+\begin{align*}
+\alpha_{0,0} &= \frac{11}{16}, & \alpha_{1,0} &= -\frac{7}{16}, \\
+\alpha_{0,1} &= -\frac{1}{16}, & \alpha_{1,1} &= 0, \\
+\alpha_{0,2} &= \frac{6}{16} = \frac{3}{8}, & \alpha_{1,2} &= \frac{7}{16}
+\end{align*}
+
+\textbf{Coin Density Matrix:}
+\begin{align*}
+(\rho_{\text{coin}}^{(8)})_{00} &= |\alpha_{0,0}|^2 + |\alpha_{0,1}|^2 + |\alpha_{0,2}|^2 = \left|\frac{11}{16}\right|^2 + \left|\frac{1}{16}\right|^2 + \left|\frac{3}{8}\right|^2 = \frac{121}{256} + \frac{1}{256} + \frac{9}{64} = \frac{121}{256} + \frac{1}{256} + \frac{36}{256} = \frac{158}{256} = \frac{79}{128} \\
+(\rho_{\text{coin}}^{(8)})_{11} &= |\alpha_{1,0}|^2 + |\alpha_{1,1}|^2 + |\alpha_{1,2}|^2 = \left|\frac{7}{16}\right|^2 + 0 + \left|\frac{7}{16}\right|^2 = \frac{49}{256} + \frac{49}{256} = \frac{98}{256} = \frac{49}{128} \\
+(\rho_{\text{coin}}^{(8)})_{01} &= \alpha_{0,0}\alpha_{1,0}^* + \alpha_{0,1}\alpha_{1,1}^* + \alpha_{0,2}\alpha_{1,2}^* \\
+&= \left(\frac{11}{16}\right)\left(-\frac{7}{16}\right) + \left(-\frac{1}{16}\right)\cdot 0 + \left(\frac{3}{8}\right)\left(\frac{7}{16}\right) \\
+&= -\frac{77}{256} + 0 + \frac{21}{128} = -\frac{77}{256} + \frac{42}{256} = -\frac{35}{256}
+\end{align*}
+
+\[
+\rho_{\text{coin}}^{(8)} = \begin{pmatrix} \frac{79}{128} & -\frac{35}{256} \\ -\frac{35}{256} & \frac{49}{128} \end{pmatrix}
+= \frac{1}{256} \begin{pmatrix} 158 & -35 \\ -35 & 98 \end{pmatrix}
+\]
+
+\textbf{Eigenvalues:} Solve $\det(\rho_{\text{coin}}^{(8)} - \lambda I) = 0$:
+\[
+\det\begin{pmatrix} \frac{79}{128} - \lambda & -\frac{35}{256} \\ -\frac{35}{256} & \frac{49}{128} - \lambda \end{pmatrix} = 0
+\]
+\[
+\left(\frac{79}{128} - \lambda\right)\left(\frac{49}{128} - \lambda\right) - \frac{1225}{65536} = 0
+\]
+\[
+\lambda^2 - \left(\frac{79}{128} + \frac{49}{128}\right)\lambda + \frac{3871}{16384} - \frac{1225}{65536} = 0
+\]
+\[
+\lambda^2 - \lambda + \frac{15484}{65536} - \frac{1225}{65536} = 0
+\]
+\[
+\lambda^2 - \lambda + \frac{14259}{65536} = 0
+\]
+
+\[
+\lambda = \frac{1 \pm \sqrt{1 - \frac{57036}{65536}}}{2} = \frac{1 \pm \sqrt{\frac{8500}{65536}}}{2} = \frac{1 \pm \frac{\sqrt{8500}}{256}}{2} = \frac{1 \pm \frac{10\sqrt{85}}{256}}{2} = \frac{1 \pm \frac{5\sqrt{85}}{128}}{2}
+\]
+\[
+\lambda = \frac{128 \pm 5\sqrt{85}}{256}
+\]
+
+Numerically:
+\[
+5\sqrt{85} \approx 5 \cdot 9.2195 = 46.0975
+\]
+\[
+\lambda_1 = \frac{128 + 46.0975}{256} = \frac{174.0975}{256} = 0.68007
+\]
+\[
+\lambda_2 = \frac{128 - 46.0975}{256} = \frac{81.9025}{256} = 0.31993
+\]
+
+\textbf{Entropy:}
+\[
+S_8 = -\lambda_1 \log_2 \lambda_1 - \lambda_2 \log_2 \lambda_2
+\]
+\[
+= -0.68007 \log_2 0.68007 - 0.31993 \log_2 0.31993
+\]
+\[
+= -0.68007 \cdot (-0.5560) - 0.31993 \cdot (-1.6440)
+\]
+\[
+= 0.3781 + 0.5262 = 0.9043 \quad 
+\]
+
+Perfect match with experimental S=0
+
+\appendix{Program listing}
+
+\appendix
+\section{Appendix: Python Code for Quantum Walk Verification}
+\label{app:python_code}
+
+This appendix provides the complete Python code used to verify the quantum walk dynamics on a 3-cycle. The code calculates probability distributions, purity, and entanglement entropy for each step, and was used to generate the experimental results presented in Table~\ref{tab:walk_results}.
+
+\subsection{Program Overview}
+The Python program implements a quantum walk simulator for a single walker on a 3-cycle with the following features:
+
+\begin{itemize}
+    \item \textbf{Flexible coin operator}: Supports any coin parameter $\rho$ with phase parameters $\alpha$ and $\beta$
+    \item \textbf{Complete evolution}: Applies the unitary operator $U = S \cdot C$ repeatedly to the initial state
+    \item \textbf{Metric calculation}: Computes position probabilities, purity, and von Neumann entanglement entropy
+    \item \textbf{Verification}: Checks for revival periods and validates probability conservation
+\end{itemize}
+
+\subsection{Key Functions}
+\begin{enumerate}
+    \item \texttt{quantum\_walk\_3cycle(rho, alpha=0, beta=0, steps=8)}: Main simulation function
+    \item \texttt{print\_results(results, coin\_name="")}: Displays formatted results
+    \item \texttt{verify\_revival(results, steps=8)}: Checks for revival periods
+\end{enumerate}
+
+\subsection{Code Listing}
+\label{app:code}
+
+The following Python code was used to verify all calculations in this document:
+
+\lstinputlisting[language=Python, caption={Quantum Walk Verification Code}, label={code:verification}]{two_coins_1_walker_experiment_01.py}
+
+
+\subsection{Program Output}
+When executed, the program produces the following verification outputs:
+
+\begin{enumerate}
+    \item \textbf{Hadamard Coin ($\rho = 0.5$)}: Complete step-by-step results matching Table~\ref{tab:walk_results}
+    \item \textbf{Dukes' Revival Coin ($\rho = 2/3$)}: Demonstrates perfect revival at step 8
+    \item \textbf{Verification checks}: Confirms probability conservation and purity
+\end{enumerate}
+
+\subsection{Dependencies and Usage}
+\begin{itemize}
+    \item \textbf{Required library}: NumPy (for linear algebra operations)
+    \item \textbf{Python version}: 3.6 or higher
+    \item \textbf{Execution}: Run the script directly to see both Hadamard and revival coin results
+\end{itemize}
+
+This code provides an independent verification of all analytical calculations presented in the main document.
+
+\end{document}
