@@ -3,3 +3,5 @@
 # Description
 This file contains the latex for the calculations of 8 steps for the walker.  The probability distribution, purity and entanglement entropy are calculated.
 A python program experimentally produces the same results.
+
+The program was originally run in colab
